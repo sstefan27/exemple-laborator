@@ -11,13 +11,14 @@ namespace Lucrarea01
         static void Main(string[] args)
         {
                 var listOfProducts = ReadListOfProducts().ToArray();
-                var cartDetails = ReadDetails();
-                UnvalidatedCart unvalidatedCart = new(listOfProducts, cartDetails);
+                var paymentAddress = ReadDetails();
+                UnvalidatedCart unvalidatedCart = new(listOfProducts, paymentAddress);
                 ICart result = CheckCart(unvalidatedCart);
                 result.Match(
                     whenUnvalidatedCart: unvalidatedCart => unvalidatedCart,
                     whenEmptyCart: invalidResult => invalidResult,
-                    whenValidatedCart: validatedCart => PublishedCart(validatedCart, cartDetails,DateTime.Now),
+                    whenInvalidatedCart: invalidResult => invalidResult,
+                    whenValidatedCart: validatedCart => PublishedCart(validatedCart, paymentAddress,DateTime.Now),
                     whenPublishedCart: PublishedCart => PublishedCart
                 );
                 Console.WriteLine(listOfProducts);
@@ -44,25 +45,27 @@ namespace Lucrarea01
             } while (true);
             return listOfProducts;
         }
-        private static ICart CheckCart(UnvalidatedCart unvalidatedCart) => ((string.IsNullOrEmpty(unvalidatedCart.CartDetails.PaymentAddress.Value))? new EmptyCart(new List<UnvalidatedProduct>(), "EmptyCart")
-                      :( (unvalidatedCart.CartDetails.PaymentState.Value == 0) ? new ValidatedCart(new List<ValidatedProduct>(), unvalidatedCart.CartDetails)
-                             :new PublishedCart(new List<ValidatedProduct>(), unvalidatedCart.CartDetails, DateTime.Now)));
+        private static ICart CheckCart(UnvalidatedCart unvalidatedCart) => ((string.IsNullOrEmpty(unvalidatedCart.PaymentAddress.Value))? new EmptyCart()
+                      :( (unvalidatedCart.PaymentAddress.Value == null) ? new ValidatedCart(new List<ValidatedProduct>(), unvalidatedCart.PaymentAddress)
+                             :new PublishedCart(new List<ValidatedProduct>(), unvalidatedCart.PaymentAddress, DateTime.Now)));
         
-        private static ICart PublishedCart(ValidatedCart validatedResult, CartDetails cartDetails, DateTime PublishedDate) =>
-                new PublishedCart(new List<ValidatedProduct>(), cartDetails, DateTime.Now);
+        private static ICart PublishedCart(ValidatedCart validatedResult, PaymentAddress paymentAddress, DateTime PublishedDate) =>
+                new PublishedCart(new List<ValidatedProduct>(), paymentAddress, DateTime.Now);
 
         
 
-        public static CartDetails ReadDetails()
+        public static PaymentAddress ReadDetails()
         {
-            PaymentState paymentState;
             PaymentAddress paymentAddress;
-            CartDetails cartDetails;
 
             if (true)
             {
 
                 var Address = ReadValue("Address: ");
+                // var City = ReadValue("City: ");
+                // var Street = ReadValue("Street: ");
+                // var PostalCode = ReadValue("PostalCode: ");
+                // Address= City + "" + Street + "" + PostalCode;
                 if (string.IsNullOrEmpty(Address))
                 {
                     paymentAddress = new PaymentAddress("not defined");
@@ -72,27 +75,21 @@ namespace Lucrarea01
                     paymentAddress = new PaymentAddress(Address);
                 }
                 Console.Write("Press ENTER if you want to pay...");
-                if(Console.ReadKey().Key != ConsoleKey.Enter) { paymentState = new PaymentState(0);}
+                if(Console.ReadKey().Key != ConsoleKey.Enter) { 
+                    Console.Write("Nu ati platit!!!");
+                }
                 else
                 {
-                    paymentState = new PaymentState(1);
-                    Console.Write("You did not pay!");
+                    Console.Write("Achizitia a avut loc cu succes");
                 }
-            }
-            else
-            {
-                paymentAddress = new PaymentAddress("not defined");
-                paymentState = new PaymentState(0);
-            }
-            cartDetails = new CartDetails(paymentAddress, paymentState);
-            return cartDetails;
+            return paymentAddress;
          }
+        }
 
         private static string? ReadValue(string prompt)
         {
             Console.Write(prompt);
             return Console.ReadLine();
         }
-
     }
 }

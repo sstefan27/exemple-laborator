@@ -9,24 +9,23 @@ namespace Lucrarea01.Domain
 {
    public record  ProductAmount
     {
-        private static readonly Regex ValidPattern = new("/^[0-9]+$/");
-        public string Value { get; }
+        public int Value { get; }
 
-        private ProductAmount(string value)
+        private ProductAmount(int value)
         {
-            if (ValidPattern.IsMatch(value))
+            if (value > 0 && value <= 100 )
             {
                 Value = value;
             }
             else
             {
-                throw new InvalidProductAmount("This field requires only numeric char");
+                throw new InvalidProductAmount("Insuficient stocks");
             }
         }
 
         public override string ToString()
         {
-            return Value;
+            return $"{Value:0.##}";
         }
     }
 }

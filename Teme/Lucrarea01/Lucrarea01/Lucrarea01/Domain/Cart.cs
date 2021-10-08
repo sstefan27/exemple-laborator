@@ -12,14 +12,15 @@ namespace Lucrarea01.Domain
     {
         public interface ICart
         {   }
+        public record UnvalidatedCart(IReadOnlyCollection<UnvalidatedProduct> ProductList, PaymentAddress PaymentAddress) : ICart;
 
-        public record UnvalidatedCart(IReadOnlyCollection<UnvalidatedProduct> ProductList, CartDetails CartDetails) : ICart;
-
-        public record EmptyCart(IReadOnlyCollection<UnvalidatedProduct> ProductList, string reason) : ICart;
+        public record EmptyCart() : ICart;
         
-        public record ValidatedCart(IReadOnlyCollection<ValidatedProduct> ProductList, CartDetails CartDetails) : ICart;
+        public record InvalidatedCart(IReadOnlyCollection<UnvalidatedProduct> ProductList, string reason): ICart; 
+        
+        public record ValidatedCart(IReadOnlyCollection<ValidatedProduct> ProductList, PaymentAddress PaymentAddress) : ICart;
 
-        public record PublishedCart(IReadOnlyCollection<ValidatedProduct> ProductList, CartDetails CartDetails, DateTime PublishedDate) : ICart;
+        public record PublishedCart(IReadOnlyCollection<ValidatedProduct> ProductList, PaymentAddress PaymentAddress, DateTime PublishedDate) : ICart;
 
     }
 }
